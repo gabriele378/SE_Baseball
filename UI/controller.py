@@ -7,27 +7,35 @@ class Controller:
         self._view = view
         self._model = model
 
-
     def handle_crea_grafo(self, e):
         """ Handler per gestire creazione del grafo """""
         # TODO
-
-        year = self._view.dd_anno.value
-
-        return self._model.crea_grafo(year)
+        self._model.build_graph(self._view.dd_anno.value)
 
     def handle_dettagli(self, e):
         """ Handler per gestire i dettagli """""
         # TODO
+        self._view.txt_risultato.clean()
+        mappa = self._model.mappa(self._view.dd_anno.value)
 
-    def popola_dd(self, e):
-        anni = self._model.anni()  # chiama il metodo, non un attributo
-        self._view.dd_anno.options.clear()
-        for anno in anni:
-            self._view.dd_anno.options.append(ft.dropdown.Option(str(anno)))
+        valore = self._view.dd_squadra.value[:3] # team_code
+        nodo = mappa[valore]
+
+        lista = []
+        vicini = self._model.dettagli(nodo)
+        for vicino in vicini:
+            for u,v,w in self._model.G.edges(data = True):
+                if (vicino == u and nodo == v) or (vicino == v and nodo == u):
+                    lista.append((vicino, w['weight']))
+
+        lista.sort(key = lambda x: x[1] , reverse = True)
+
+        self._view.txt_risultato.controls.append(ft.Text(f"il numero di nodi è: {self._model.G.number_of_nodes()}"))
+
+        for vicino in lista:
+            self._view.txt_risultato.controls.append(ft.Text(f"{vicino[0].team_code} ({vicino[0].name}) - peso {vicino[1]}"))
+
         self._view.update()
-
-
 
 
     def handle_percorso(self, e):
@@ -36,3 +44,24 @@ class Controller:
 
     """ Altri possibili metodi per gestire di dd_anno """""
     # TODO
+    def popola_anni(self):
+        anni = self._model.get_anni()
+        for anno in anni:
+            self._view.dd_anno.options.append(ft.dropdown.Option(str(anno)))
+
+    def popola_squadre(self,e):
+        self._view.txt_out_squadre.clean()
+        self._view.dd_squadra.options.clear()
+
+        squadre = self._model.get_squadre(self._view.dd_anno.value)
+        self._view.txt_out_squadre.controls.append(ft.Text(f"Numero Squadre: {len(squadre)}"))
+        for squadra in squadre:
+            self._view.txt_out_squadre.controls.append(ft.Text(f"{squadra.team_code}({squadra.name})"))
+            self._view.dd_squadra.options.append(ft.dropdown.Option(f"{squadra.team_code}({squadra.name})"))
+
+        self._view.update()
+
+
+
+
+

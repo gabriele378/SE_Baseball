@@ -1,6 +1,8 @@
 import flet as ft
 from UI.alert import AlertManager
 
+
+
 class View:
     def __init__(self, page: ft.Page):
         # Page
@@ -32,8 +34,9 @@ class View:
         # TODO
 
         # Riga 1
-        self.dd_anno = ft.Dropdown(label="Anno", width=200, alignment=ft.alignment.top_left)
-        self.controller.popola_dd(None)
+        self.dd_anno = ft.Dropdown(label="Anno", width=200, alignment=ft.alignment.top_left, on_change = self.controller.popola_squadre)
+        self.controller.popola_anni()
+
         row1 = ft.Row([ft.Container(self.txt_titolo, width=500),
                                ft.Container(None, width=0),
                                ft.Container(self.dd_anno, width=250)],

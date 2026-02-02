@@ -5,43 +5,40 @@ from database.dao import DAO
 
 class Model:
     def __init__(self):
-        self.team = None
-        self.stipendi = None
-        self.anni = None
-
+        self.squadre = []
         self.G = nx.Graph()
+        self.map = {}
 
+    def mappa(self, anno):
+        self.squadre = DAO.read_squadre(anno)
+        for squadra in self.squadre:
+            self.map[squadra.team_code] = squadra
 
-    def numero_squadre(self):
-        for team in self.team:
-            n_squadre = team['NumeroSquadre']
+        return self.map
 
-        return n_squadre
+    def get_anni(self):
+        return DAO.read_anni()
 
-    def neighbors(self, team):
-        vicini = self.G.neighbors(team)
+    def get_squadre(self, anno):
+         return DAO.read_squadre(anno)
 
-        return vicini
-
-    def anni(self):
-        return DAO.get_year()
-
-
-
-
-
-
-    def crea_grafo(self, year):
+    def build_graph(self,anno):
         self.G.clear()
+        stipendi = DAO.read_stipendi(anno)
+        self.squadre = DAO.read_squadre(anno)
 
-        self.stipendi = DAO.get_salary()
-        for s in self.stipendi:
-            somma_stipendi = s.somma_stipendi
 
-            self.team = DAO.get_team(year)
-            for team in self.team:
-                self.G.add_node(team)
+        self.G.add_nodes_from(self.squadre)
 
-                for team2 in self.team:
-                    if team2 != team:
-                        self.G.add_edge(team, team2, weight = somma_stipendi)
+        for s1 in self.squadre:
+            stipendio1 = stipendi[s1.team_code]
+            for s2 in self.squadre:
+                stipendio2 = stipendi[s2.team_code]
+                if s1 != s2:
+                    self.G.add_edge(s1, s2, weight = stipendio1 + stipendio2)
+
+
+        return self.G
+
+    def dettagli(self, squadra):
+        return list(self.G.neighbors(squadra))
